@@ -42,15 +42,15 @@ playerCell pId =
             Empty
 
 
-viewGameOver : GameOver -> TicTacToeState -> Context -> Html move
-viewGameOver go state context =
+viewGameOver : GameOver -> TicTacToeState -> Context -> PlayerId -> Html move
+viewGameOver go state context _ =
     Html.div [ Html.Attributes.class "flex flex-col items-center" ]
         [ Html.div [ Html.Attributes.class "text-[32px]" ]
             [ Html.h1 []
                 [ Html.text "Game Over!"
                 ]
             ]
-        , Html.div [ Html.Attributes.class "text-[32px]" ]
+        , Html.div [ Html.Attributes.class "text-[24px]" ]
             [ Html.h1 []
                 [ Html.text
                     (case go of
@@ -72,12 +72,26 @@ viewGameOver go state context =
         ]
 
 
-view : TicTacToeState -> Context -> Html Move
-view state context =
+view : TicTacToeState -> Context -> PlayerId -> Html Move
+view state context playerId =
     Html.div [ Html.Attributes.class "flex flex-col items-center" ]
         [ Html.div [ Html.Attributes.class "text-[32px]" ]
             [ Html.h1 []
                 [ Html.text "Tic-Tac-Toe"
+                ]
+            ]
+        , Html.div [ Html.Attributes.class "text-[24px]" ]
+            [ Html.h1 []
+                [ Html.text
+                    ("Player "
+                        ++ (if playerId == 0 then
+                                "1"
+
+                            else
+                                "2"
+                           )
+                        ++ "'s turn"
+                    )
                 ]
             ]
         , renderGrid (Just ClickCell) state
