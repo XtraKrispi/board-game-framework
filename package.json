@@ -2,11 +2,11 @@
   "name": "board-game-engine",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev:tailwind": "npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
     "dev:serve": "npx parcel public/index.html",
-    "start": "parcel public/index.html"
+    "start": "parcel public/index.html",
+    "build": "parcel build public/index.html"
   },
   "author": "",
   "license": "ISC",
