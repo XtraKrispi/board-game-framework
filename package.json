@@ -6,7 +6,7 @@
     "dev:tailwind": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
     "dev:serve": "parcel public/index.html",
     "start": "concurrently npm:dev*",
-    "build": "parcel build public/index.html --public-url '.' "
+    "build": "tailwindcss -o dist/output.css --minify && parcel build public/index.html --public-url '.' "
   },
   "author": "",
   "license": "ISC",
