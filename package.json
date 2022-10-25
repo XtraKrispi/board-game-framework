@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev:tailwind": "npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
-    "dev:serve": "npx parcel public/index.html",
-    "start": "parcel public/index.html",
+    "dev:tailwind": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
+    "dev:serve": "parcel public/index.html",
+    "start": "concurrently npm:dev*",
     "build": "parcel build public/index.html --public-url '.' "
   },
   "author": "",
