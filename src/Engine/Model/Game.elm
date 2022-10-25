@@ -27,7 +27,7 @@ type alias Move state move =
 
 
 type alias Game state move gameOver =
-    { setup : () -> state
+    { setup : state
     , moves : Move state move
     , checkWinner : Snapshot state -> Maybe gameOver
     }

@@ -7,7 +7,7 @@ import Maybe.Extra exposing (isJust)
 
 
 type alias Render state move =
-    state -> Context -> PlayerId -> Html move
+    Game.Snapshot state -> Html move
 
 
 type Status gameOver
@@ -36,7 +36,7 @@ initClient :
 initClient { numberOfPlayers } game render renderGameOver =
     let
         initState =
-            game.setup ()
+            game.setup
     in
     Client
         { context =
@@ -53,14 +53,12 @@ initClient { numberOfPlayers } game render renderGameOver =
 
 view : Client state move gameOver -> Html move
 view (Client client) =
-    Html.div []
-        [ case client.status of
-            Playing ->
-                client.render client.state client.context client.playerId
+    case client.status of
+        Playing ->
+            client.render (Game.Snapshot client.state client.context client.playerId)
 
-            GameOver go ->
-                client.renderGameOver go client.state client.context client.playerId
-        ]
+        GameOver go ->
+            client.renderGameOver go (Game.Snapshot client.state client.context client.playerId)
 
 
 update : Client state move gameOver -> move -> Client state move gameOver
