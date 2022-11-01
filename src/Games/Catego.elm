@@ -2,7 +2,7 @@ module Games.Catego exposing (..)
 
 import Engine.Model.Game exposing (Game, Snapshot, TurnStatus(..))
 import Engine.Model.Player exposing (PlayerId)
-import Html exposing (Html, i)
+import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Maybe.Extra as Maybe

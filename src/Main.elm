@@ -36,7 +36,7 @@ type Msg
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.document
         { init = init
         , view = view
         , update = update
@@ -98,14 +98,20 @@ subscriptions _ =
     Sub.none
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    case model of
-        GettingSeed ->
-            Html.div [] []
+    { body =
+        [ Html.div [ Html.Attributes.class "h-screen" ]
+            [ case model of
+                GettingSeed ->
+                    Html.div [] []
 
-        ReadyToPlay mdl ->
-            inGameView mdl
+                ReadyToPlay mdl ->
+                    inGameView mdl
+            ]
+        ]
+    , title = "Board Game Framework"
+    }
 
 
 tab : Bool -> Game -> Html Msg
