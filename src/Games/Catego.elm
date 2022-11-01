@@ -244,7 +244,7 @@ renderScorecard isGameOver { state, playerId } =
                 ]
 
             else
-                []
+                [ Html.Attributes.class "cursor-not-allowed" ]
 
         getWellState pId well =
             let
@@ -375,7 +375,13 @@ renderGameState : GameState -> Html Move
 renderGameState gs =
     case gs of
         PreRoll ->
-            Html.div [] [ Html.button [ Html.Events.onClick RollDice ] [ Html.text "Roll Dice" ] ]
+            Html.div []
+                [ Html.button
+                    [ Html.Events.onClick RollDice
+                    , Html.Attributes.class "border p-4 rounded transition-all drop-shadow-lg hover:bg-gray-400 hover:text-white"
+                    ]
+                    [ Html.text "Roll Dice" ]
+                ]
 
         Rolled d1 d2 ->
             Html.div [ Html.Attributes.class "flex space-x-4" ]

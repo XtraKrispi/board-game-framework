@@ -15,8 +15,13 @@ type Cell
     | Empty
 
 
+type Highlight
+    = Highlight
+    | DontHighlight
+
+
 type alias TicTacToeState =
-    { cells : List Cell
+    { cells : List ( Cell, Highlight )
     }
 
 
@@ -26,7 +31,7 @@ type Move
 
 type GameOver
     = CatsGame
-    | PlayerWon PlayerId
+    | PlayerWon PlayerId (List Int)
 
 
 playerCell : PlayerId -> Cell
@@ -44,6 +49,31 @@ playerCell pId =
 
 viewGameOver : GameOver -> Game.Snapshot TicTacToeState -> Html move
 viewGameOver go { state } =
+    let
+        ( txt, updatedCells ) =
+            case go of
+                CatsGame ->
+                    ( "It's a draw!", state.cells )
+
+                PlayerWon pId ids ->
+                    ( (if pId == 0 then
+                        "Player 1"
+
+                       else
+                        "Player 2"
+                      )
+                        ++ " won!"
+                    , state.cells
+                        |> List.indexedMap
+                            (\i ( c, _ ) ->
+                                if List.member i ids then
+                                    ( c, Highlight )
+
+                                else
+                                    ( c, DontHighlight )
+                            )
+                    )
+    in
     Html.div [ Html.Attributes.class "h-full flex flex-col items-center justify-between" ]
         [ Html.div []
             [ Html.div [ Html.Attributes.class "text-center text-[32px]" ]
@@ -54,23 +84,11 @@ viewGameOver go { state } =
             , Html.div [ Html.Attributes.class "text-center text-[24px]" ]
                 [ Html.h1 []
                     [ Html.text
-                        (case go of
-                            CatsGame ->
-                                "It's a draw!"
-
-                            PlayerWon pId ->
-                                (if pId == 0 then
-                                    "Player 1"
-
-                                 else
-                                    "Player 2"
-                                )
-                                    ++ " won!"
-                        )
+                        txt
                     ]
                 ]
             ]
-        , renderGrid Nothing state
+        , renderGrid Nothing { cells = updatedCells }
         , Html.div [] []
         ]
 
@@ -119,17 +137,28 @@ renderGrid mOnClick state =
     in
     state.cells
         |> List.indexedMap
-            (\i c ->
-                Html.div (Html.Attributes.class "bg-white text-center flex justify-center items-center text-[52px]" :: clickAttr i)
+            (\i ( c, h ) ->
+                Html.div
+                    (Html.Attributes.class "bg-white text-center flex justify-center items-center text-[52px]"
+                        :: clickAttr i
+                    )
                     [ case c of
                         X ->
-                            Html.span [] [ Html.text "X" ]
+                            Html.span
+                                [ Html.Attributes.class "h-[52px] w-[52px] flex items-center justify-center rounded-full"
+                                , Html.Attributes.classList [ ( "bg-black text-white ", h == Highlight ) ]
+                                ]
+                                [ Html.span [] [ Html.text "X" ] ]
 
                         O ->
-                            Html.span [] [ Html.text "O" ]
+                            Html.span
+                                [ Html.Attributes.class "h-[52px] w-[52px] flex items-center justify-center rounded-full"
+                                , Html.Attributes.classList [ ( "bg-black text-white ", h == Highlight ) ]
+                                ]
+                                [ Html.span [] [ Html.text "O" ] ]
 
                         Empty ->
-                            Html.span [ Html.Attributes.class "text-transparent" ] [ Html.text "-" ]
+                            Html.span [ Html.Attributes.class "text-transparent h-[52px] w-[52px]" ] [ Html.text "-" ]
                     ]
             )
         |> Html.div [ Html.Attributes.class "bg-black grid grid-cols-3 gap-2 h-64 w-64" ]
@@ -143,12 +172,12 @@ processMove move { state, playerId } =
                 newCells =
                     state.cells
                         |> List.indexedMap
-                            (\i c ->
+                            (\i ( c, h ) ->
                                 if i == id && c == Empty then
-                                    playerCell playerId
+                                    ( playerCell playerId, h )
 
                                 else
-                                    c
+                                    ( c, h )
                             )
             in
             ( { state
@@ -183,23 +212,35 @@ checkWinner { state, playerId } =
         allCombos =
             List.concat [ rows, cols, diags ]
 
-        anyWinners =
+        winners =
             allCombos
                 |> List.map
                     (\ids ->
                         ids
-                            |> List.map (\id -> List.Extra.getAt id state.cells)
+                            |> List.map (\id -> List.Extra.getAt id state.cells |> Maybe.map (\c -> ( id, c )))
                             |> Maybe.Extra.values
-                            |> (\l -> List.length l == 3 && List.length (List.Extra.unique l) == 1 && List.all (\i -> i == playerCell playerId) l)
+                            |> (\l -> ( List.length l == 3 && List.length (List.Extra.unique (l |> List.map Tuple.second)) == 1 && List.all (\( id, ( i, _ ) ) -> i == playerCell playerId) l, l ))
                     )
-                |> List.any identity
+                |> List.filter Tuple.first
 
         allFilled =
             state.cells
-                |> List.all (\c -> c /= Empty)
+                |> List.all (\( c, _ ) -> c /= Empty)
     in
-    if anyWinners then
-        Just <| PlayerWon playerId
+    if not (List.isEmpty winners) then
+        Just <|
+            PlayerWon playerId
+                (winners
+                    |> List.map
+                        (\( valid, cells ) ->
+                            if valid then
+                                List.map Tuple.first cells
+
+                            else
+                                []
+                        )
+                    |> List.concat
+                )
 
     else if allFilled then
         Just <| CatsGame
@@ -210,7 +251,7 @@ checkWinner { state, playerId } =
 
 ticTacToe : Game TicTacToeState Move GameOver
 ticTacToe =
-    { setup = { cells = List.repeat 9 Empty }
+    { setup = { cells = List.repeat 9 ( Empty, DontHighlight ) }
     , moves = processMove
     , checkWinner = checkWinner
     }
